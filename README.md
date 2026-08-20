@@ -1,5 +1,7 @@
 # splat-walker
 
+**[Live demo](https://anand-ramnarain-27.github.io/splat-walker/)**
+
 A Gaussian splat viewer built around a real workflow used in spatial-capture pipelines: walk (or drive) a path through a space capturing 360° footage, reconstruct it as a 3D Gaussian splat scene, then let someone else retrace that exact path — or step off it and explore freely.
 
 Most splat viewers only do free orbit. This one treats the *captured path* as a first-class citizen: a defined route through the scene that plays back smoothly, with the option to peel off into free exploration and back.
@@ -44,7 +46,7 @@ Two different tuning choices, driven by scene size:
 
 ## Deployment
 
-Pushes to `main` build and deploy to GitHub Pages automatically via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Enable Pages for this repo under Settings → Pages → Source: GitHub Actions.
+Live at **[anand-ramnarain-27.github.io/splat-walker](https://anand-ramnarain-27.github.io/splat-walker/)**. Pushes to `main` build and deploy to GitHub Pages automatically via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
 
 ## Attribution
 
