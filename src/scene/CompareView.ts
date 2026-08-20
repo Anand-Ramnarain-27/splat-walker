@@ -2,6 +2,10 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createSplatScene } from "./SplatScene";
 import { cinematicWaypointsFromSplats } from "./framing";
+import { KeyboardMovement } from "./KeyboardMovement";
+import { applyFlyMovement } from "./flyMovement";
+
+const MOVE_SPEED = 4;
 
 export interface ComparePane {
   url: string;
@@ -25,8 +29,10 @@ interface PaneState {
 export class CompareView {
   private readonly root: HTMLDivElement;
   private readonly panes: PaneState[] = [];
+  private readonly keyboard = new KeyboardMovement();
   private readonly onWindowResize: () => void;
   private rafId: number | null = null;
+  private activePaneIndex = 0;
 
   constructor(container: HTMLElement, options: CompareViewOptions) {
     this.root = document.createElement("div");
@@ -51,7 +57,11 @@ export class CompareView {
 
     const clock = new THREE.Clock();
     const animate = () => {
-      clock.getDelta();
+      const delta = clock.getDelta();
+      const activePane = this.panes[this.activePaneIndex];
+      if (activePane) {
+        applyFlyMovement(activePane.camera, activePane.controls.target, this.keyboard, delta, MOVE_SPEED);
+      }
       for (const pane of this.panes) {
         pane.controls.update();
         pane.renderer.render(pane.scene, pane.camera);
@@ -67,6 +77,10 @@ export class CompareView {
 
     const canvasHost = document.createElement("div");
     canvasHost.className = "compare__canvas-host";
+    const paneIndex = this.panes.length;
+    canvasHost.addEventListener("pointerenter", () => {
+      this.activePaneIndex = paneIndex;
+    });
 
     const label = document.createElement("div");
     label.className = "compare__label";
@@ -122,6 +136,7 @@ export class CompareView {
   dispose(): void {
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
     window.removeEventListener("resize", this.onWindowResize);
+    this.keyboard.dispose();
     for (const pane of this.panes) {
       pane.controls.dispose();
       pane.renderer.dispose();
