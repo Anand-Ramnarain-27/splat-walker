@@ -1,1 +1,1 @@
-{"root":["./src/config.ts","./src/main.ts","./src/scene/camerarig.ts","./src/scene/pathcontroller.ts","./src/scene/splatscene.ts","./src/scene/framing.ts","./src/ui/controls.ts"],"version":"5.9.3"}
+{"root":["./src/config.ts","./src/main.ts","./src/scene/camerarig.ts","./src/scene/keyboardmovement.ts","./src/scene/pathcontroller.ts","./src/scene/splatscene.ts","./src/scene/framing.ts","./src/ui/controls.ts"],"version":"5.9.3"}

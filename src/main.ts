@@ -72,6 +72,6 @@ const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const delta = clock.getDelta();
   pathController?.update(delta);
-  cameraRig?.update();
+  cameraRig?.update(delta);
   renderer.render(scene, camera);
 });
