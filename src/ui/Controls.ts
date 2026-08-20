@@ -2,6 +2,7 @@ export interface ControlsCallbacks {
   onPlayPause: () => void;
   onScrub: (t: number) => void;
   onModeToggle: () => void;
+  onCompare: () => void;
 }
 
 const SCRUB_STEPS = 1000;
@@ -11,6 +12,7 @@ export class Controls {
   private readonly playButton: HTMLButtonElement;
   private readonly scrubInput: HTMLInputElement;
   private readonly modeButton: HTMLButtonElement;
+  private readonly compareButton: HTMLButtonElement;
   private scrubbing = false;
 
   constructor(container: HTMLElement, callbacks: ControlsCallbacks) {
@@ -39,7 +41,12 @@ export class Controls {
       this.scrubbing = false;
     });
 
-    this.root.append(this.playButton, this.scrubInput, this.modeButton);
+    this.compareButton = document.createElement("button");
+    this.compareButton.className = "controls__button controls__compare";
+    this.compareButton.textContent = "Compare";
+    this.compareButton.addEventListener("click", callbacks.onCompare);
+
+    this.root.append(this.playButton, this.scrubInput, this.modeButton, this.compareButton);
     container.appendChild(this.root);
 
     this.setPlaying(false);

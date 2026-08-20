@@ -4,7 +4,8 @@ import { PathController } from "./scene/PathController";
 import { CameraRig } from "./scene/CameraRig";
 import { Controls } from "./ui/Controls";
 import { cinematicWaypointsFromSplats } from "./scene/framing";
-import { SPLAT_URL } from "./config";
+import { CompareView } from "./scene/CompareView";
+import { SPLAT_URL, DEV_PLACEHOLDER_URL } from "./config";
 
 const PATH_DURATION_SECONDS = 26;
 
@@ -34,6 +35,7 @@ app.appendChild(loadingEl);
 let pathController: PathController | null = null;
 let cameraRig: CameraRig | null = null;
 let controls: Controls | null = null;
+let compareView: CompareView | null = null;
 
 const { splatMesh } = createSplatScene(scene, renderer, {
   url: SPLAT_URL,
@@ -64,14 +66,27 @@ const { splatMesh } = createSplatScene(scene, renderer, {
         cameraRig.setMode(next);
         controls?.setMode(next);
       },
+      onCompare: () => {
+        renderer.setAnimationLoop(null);
+        compareView = new CompareView(app, {
+          left: { url: DEV_PLACEHOLDER_URL, label: "Where we started (dev placeholder)" },
+          right: { url: SPLAT_URL, label: "Calico Tanks Trail (final capture)" },
+          onClose: () => {
+            compareView?.dispose();
+            compareView = null;
+            renderer.setAnimationLoop(mainLoop);
+          },
+        });
+      },
     });
   },
 });
 
 const clock = new THREE.Clock();
-renderer.setAnimationLoop(() => {
+function mainLoop(): void {
   const delta = clock.getDelta();
   pathController?.update(delta);
   cameraRig?.update(delta);
   renderer.render(scene, camera);
-});
+}
+renderer.setAnimationLoop(mainLoop);

@@ -20,6 +20,7 @@ The camera path isn't hand-authored — `src/scene/framing.ts` derives it from t
 
 - **Follow Path**: Play/pause and scrub through the overview → walkthrough sequence.
 - **Free Explore**: `W`/`A`/`S`/`D` or arrow keys to move, `Space`/`Shift` for up/down, mouse-drag to look around.
+- **Compare**: side-by-side view of the small dev placeholder scene against the final Calico Tanks Trail capture — a look at where the project started vs. where it ended up, each pane independently orbitable.
 
 ## Stack
 
@@ -33,6 +34,13 @@ The camera path isn't hand-authored — `src/scene/framing.ts` derives it from t
 npm install
 npm run dev
 ```
+
+## Performance
+
+Two different tuning choices, driven by scene size:
+
+- **`lod: false` was tried and reverted.** It's a reasonable choice for a small scene (the original ~982K-splat dev placeholder) where forcing full detail every frame costs little and guarantees no adaptive downsampling artifacts. At 4.8M splats it's the wrong call — it forces every splat to render every frame regardless of distance, with no headroom for weaker GPUs or mobile. The shipped scene runs with Spark's default adaptive LOD instead, which scales the rendered splat budget by platform (roughly 500K–750K on WebXR, 1–1.5M on mobile, 2.5M on desktop) and streams more detail in near the camera.
+- **7 LOD levels were available in the source capture (19M down to 297K splats); level 2 (~4.8M) was picked** as the balance point between visual fidelity and a static file GitHub Pages has to serve whole — finer levels pushed well past 100MB for diminishing visual return at the distances this camera path actually uses, and levels 4+ (under 1.2M splats) were noticeably too sparse for the ground-level walkthrough to render clean terrain instead of gaps.
 
 ## Deployment
 

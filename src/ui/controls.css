@@ -72,3 +72,81 @@ canvas {
   width: 220px;
   accent-color: #f2f2f2;
 }
+
+.controls__compare {
+  background: transparent;
+  color: #f2f2f2;
+  border: 1px solid rgba(242, 242, 242, 0.4);
+}
+
+.compare {
+  position: fixed;
+  inset: 0;
+  background: #05050a;
+  z-index: 10;
+}
+
+.compare__panes {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 800px) {
+  .compare__panes {
+    flex-direction: column;
+  }
+}
+
+.compare__pane {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  border-right: 1px solid rgba(242, 242, 242, 0.15);
+}
+
+.compare__pane:last-child {
+  border-right: none;
+}
+
+.compare__canvas-host {
+  position: absolute;
+  inset: 0;
+}
+
+.compare__label {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(10, 10, 16, 0.72);
+  backdrop-filter: blur(8px);
+  color: #f2f2f2;
+  font-size: 0.85rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.compare__loading {
+  position: absolute;
+  background: transparent;
+}
+
+.compare__close {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #f2f2f2;
+  color: #111;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}

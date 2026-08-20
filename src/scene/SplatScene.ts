@@ -18,7 +18,6 @@ export function createSplatScene(scene: THREE.Scene, renderer: THREE.WebGLRender
 
   const splatMesh = new SplatMesh({
     url: options.url,
-    lod: false,
     onProgress: (event) => {
       if (event.lengthComputable) {
         options.onProgress?.(event.loaded / event.total);
