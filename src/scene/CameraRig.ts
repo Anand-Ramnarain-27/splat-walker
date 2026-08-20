@@ -24,7 +24,6 @@ export class CameraRig {
     this.mode = mode;
     this.orbitControls.enabled = mode === "free";
     if (mode === "free") {
-      // Hand off free-explore from wherever the path camera currently is.
       const forward = this.camera.getWorldDirection(new THREE.Vector3());
       this.orbitControls.target.copy(this.camera.position).add(forward);
     }

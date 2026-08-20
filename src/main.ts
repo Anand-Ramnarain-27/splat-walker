@@ -3,7 +3,7 @@ import { createSplatScene } from "./scene/SplatScene";
 import { PathController } from "./scene/PathController";
 import { CameraRig } from "./scene/CameraRig";
 import { Controls } from "./ui/Controls";
-import { demoWaypoints } from "./data/path";
+import { orbitWaypointsFromSplats } from "./scene/framing";
 import { SPLAT_URL } from "./config";
 
 const PATH_DURATION_SECONDS = 20;
@@ -13,6 +13,7 @@ if (!app) throw new Error("#app root element not found");
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 1000);
+camera.position.set(0, 1.6, 5);
 
 const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -30,41 +31,47 @@ loadingEl.className = "loading";
 loadingEl.textContent = "Loading splat scene…";
 app.appendChild(loadingEl);
 
-createSplatScene(scene, renderer, {
+let pathController: PathController | null = null;
+let cameraRig: CameraRig | null = null;
+let controls: Controls | null = null;
+
+const { splatMesh } = createSplatScene(scene, renderer, {
   url: SPLAT_URL,
   onProgress: (fraction) => {
     loadingEl.textContent = `Loading splat scene… ${Math.round(fraction * 100)}%`;
   },
   onLoaded: () => {
     loadingEl.remove();
-  },
-});
 
-const pathController = new PathController(demoWaypoints, PATH_DURATION_SECONDS, {
-  onProgress: (t) => controls.setProgress(t),
-  onPlayStateChange: (playing) => controls.setPlaying(playing),
-});
+    const waypoints = orbitWaypointsFromSplats(splatMesh);
 
-const cameraRig = new CameraRig(camera, renderer.domElement, pathController);
-pathController.sample(camera);
+    pathController = new PathController(waypoints, PATH_DURATION_SECONDS, {
+      onProgress: (t) => controls?.setProgress(t),
+      onPlayStateChange: (playing) => controls?.setPlaying(playing),
+    });
+    cameraRig = new CameraRig(camera, renderer.domElement, pathController);
+    pathController.sample(camera);
 
-const controls = new Controls(app, {
-  onPlayPause: () => pathController.toggle(),
-  onScrub: (t) => {
-    pathController.pause();
-    pathController.seek(t);
-  },
-  onModeToggle: () => {
-    const next = cameraRig.getMode() === "path" ? "free" : "path";
-    cameraRig.setMode(next);
-    controls.setMode(next);
+    controls = new Controls(app, {
+      onPlayPause: () => pathController?.toggle(),
+      onScrub: (t) => {
+        pathController?.pause();
+        pathController?.seek(t);
+      },
+      onModeToggle: () => {
+        if (!cameraRig) return;
+        const next = cameraRig.getMode() === "path" ? "free" : "path";
+        cameraRig.setMode(next);
+        controls?.setMode(next);
+      },
+    });
   },
 });
 
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const delta = clock.getDelta();
-  pathController.update(delta);
-  cameraRig.update();
+  pathController?.update(delta);
+  cameraRig?.update();
   renderer.render(scene, camera);
 });

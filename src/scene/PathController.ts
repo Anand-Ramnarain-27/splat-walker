@@ -1,5 +1,9 @@
 import * as THREE from "three";
-import type { Waypoint } from "../data/path";
+
+export interface Waypoint {
+  position: THREE.Vector3;
+  lookAt: THREE.Vector3;
+}
 
 export interface PathControllerEvents {
   onProgress?: (t: number) => void;
@@ -65,8 +69,8 @@ export class PathController {
   }
 
   sample(camera: THREE.Camera): void {
-    const position = this.positionCurve.getPointAt(this.progress);
-    const lookAt = this.lookAtCurve.getPointAt(this.progress);
+    const position = this.positionCurve.getPoint(this.progress);
+    const lookAt = this.lookAtCurve.getPoint(this.progress);
     camera.position.copy(position);
     camera.lookAt(lookAt);
   }

@@ -23,11 +23,13 @@ export function createSplatScene(scene: THREE.Scene, renderer: THREE.WebGLRender
         options.onProgress?.(event.loaded / event.total);
       }
     },
-    onLoad: () => {
-      options.onLoaded?.();
-    },
   });
+  splatMesh.quaternion.set(1, 0, 0, 0);
   scene.add(splatMesh);
+
+  splatMesh.initialized.then(() => {
+    options.onLoaded?.();
+  });
 
   return { spark, splatMesh };
 }
