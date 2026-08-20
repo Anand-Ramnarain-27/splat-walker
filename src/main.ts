@@ -3,10 +3,10 @@ import { createSplatScene } from "./scene/SplatScene";
 import { PathController } from "./scene/PathController";
 import { CameraRig } from "./scene/CameraRig";
 import { Controls } from "./ui/Controls";
-import { orbitWaypointsFromSplats } from "./scene/framing";
+import { cinematicWaypointsFromSplats } from "./scene/framing";
 import { SPLAT_URL } from "./config";
 
-const PATH_DURATION_SECONDS = 20;
+const PATH_DURATION_SECONDS = 26;
 
 const app = document.getElementById("app");
 if (!app) throw new Error("#app root element not found");
@@ -43,7 +43,7 @@ const { splatMesh } = createSplatScene(scene, renderer, {
   onLoaded: () => {
     loadingEl.remove();
 
-    const waypoints = orbitWaypointsFromSplats(splatMesh);
+    const waypoints = cinematicWaypointsFromSplats(splatMesh);
 
     pathController = new PathController(waypoints, PATH_DURATION_SECONDS, {
       onProgress: (t) => controls?.setProgress(t),
