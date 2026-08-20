@@ -8,17 +8,24 @@ Most splat viewers only do free orbit. This one treats the *captured path* as a 
 
 Splat capture is increasingly used to document a physical space at a point in time — a construction site, a trail, a storefront — often by literally walking through it with a scanner. The useful product isn't just "a 3D scene you can orbit," it's "walk the same route the surveyor walked," and eventually, "compare that route captured on two different days." This project builds toward that: path-following as the core interaction, with free exploration as the secondary mode, and (as a stretch goal) two captures of the same route compared side by side.
 
+## Scene
+
+[**Calico Tanks Trail, Red Rock Canyon, Las Vegas NV**](https://superspl.at/scene/19312f07) — a real trail hike captured with an XGRIDS PortalCam, published by Paolo Tosolini under **CC BY 4.0**.
+
+The published capture (~410MB, 38M Gaussians across 7 LOD levels in PlayCanvas's SOG format) was converted to a single flat `.spz` for direct web delivery using PlayCanvas's official [`splat-transform`](https://www.npmjs.com/package/@playcanvas/splat-transform) CLI: LOD level 2 selected (~4.8M Gaussians), NaN and floater filtering applied, written as `.spz` v3. Result: `public/splats/calico-tanks-trail.spz`, ~70MB.
+
+The camera path isn't hand-authored — `src/scene/framing.ts` derives it from the splat data itself: a bounding-radius estimate (percentile-based, robust to stray outlier splats) drives an elevated overview sweep, and a PCA pass over the splat cloud's horizontal spread finds its dominant axis (the trail's actual direction) to build a ground-following walkthrough, sampling local terrain height near each waypoint rather than assuming a flat scene.
+
+## Controls
+
+- **Follow Path**: Play/pause and scrub through the overview → walkthrough sequence.
+- **Free Explore**: `W`/`A`/`S`/`D` or arrow keys to move, `Space`/`Shift` for up/down, mouse-drag to look around.
+
 ## Stack
 
 - **[Three.js](https://threejs.org/)** for the scene graph, camera, and render loop.
 - **[Spark](https://sparkjs.dev/)** (`@sparkjsdev/spark`) for Gaussian splat rendering — actively maintained, MIT-licensed, plugs into a standard Three.js scene as a `SplatMesh`. Chosen over `mkkellogg/GaussianSplats3D` (no longer actively developed; its own maintainer now points people to Spark).
 - Plain TypeScript + Vite, no UI framework — the app is a render loop with a small DOM overlay, not a component tree.
-
-## Status
-
-v1 in progress: splat loading, path playback, and free-explore controls are wired up against a small placeholder scene for fast local iteration.
-
-The dev placeholder is `snow-street.spz`, a small (~10MB) street-level capture served from Spark's own example CDN. It exists purely so `npm run dev` loads fast while building the path/UI system. The intended real scene is [**Calico Tanks Trail, Red Rock Canyon**](https://superspl.at/scene/19312f07) — a genuine walked-trail capture, licensed CC BY 4.0 by `tosolini` on SuperSplat — which will be decimated and compressed to `.spz` and swapped in via `src/config.ts` once the app is working end-to-end. Waypoints in `src/data/path.ts` will need re-tuning to that scene's geometry at that point.
 
 ## Getting started
 
@@ -30,3 +37,7 @@ npm run dev
 ## Deployment
 
 Pushes to `main` build and deploy to GitHub Pages automatically via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). Enable Pages for this repo under Settings → Pages → Source: GitHub Actions.
+
+## Attribution
+
+Scene: "Calico Tanks Trail, Red Rock Canyon, Las Vegas NV (XGRIDS PortalCam)" by [Paolo Tosolini](https://superspl.at/user/tosolini), licensed [CC BY 4.0](http://creativecommons.org/licenses/by/4.0/).

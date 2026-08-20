@@ -5,9 +5,13 @@ import type { Waypoint } from "./PathController";
 const SAMPLE_STRIDE = 25;
 const RADIUS_PERCENTILE = 0.85;
 const GROUND_PERCENTILE = 0.1;
-const EYE_HEIGHT = 1.7;
+const LOCAL_GROUND_PERCENTILE = 0.15;
+const LOCAL_GROUND_RADII = [6, 15, 35];
+const LOCAL_GROUND_MIN_SAMPLES = 12;
+const WALK_CLEARANCE = 4;
 
 interface SplatDistribution {
+  centers: THREE.Vector3[];
   centroid: THREE.Vector3;
   radius: number;
   groundY: number;
@@ -74,6 +78,7 @@ function analyzeSplats(splatMesh: SplatMesh): SplatDistribution {
   dir2.normalize();
 
   return {
+    centers,
     centroid,
     radius,
     groundY,
@@ -82,9 +87,25 @@ function analyzeSplats(splatMesh: SplatMesh): SplatDistribution {
   };
 }
 
+function localGroundY(centers: THREE.Vector3[], x: number, z: number, fallback: number): number {
+  for (const r of LOCAL_GROUND_RADII) {
+    const r2 = r * r;
+    const nearbyY: number[] = [];
+    for (const c of centers) {
+      const dx = c.x - x;
+      const dz = c.z - z;
+      if (dx * dx + dz * dz <= r2) nearbyY.push(c.y);
+    }
+    if (nearbyY.length >= LOCAL_GROUND_MIN_SAMPLES) {
+      nearbyY.sort((a, b) => a - b);
+      return nearbyY[Math.floor(nearbyY.length * LOCAL_GROUND_PERCENTILE)];
+    }
+  }
+  return fallback;
+}
+
 export function cinematicWaypointsFromSplats(splatMesh: SplatMesh): Waypoint[] {
-  const { centroid, radius, groundY, walkDirection, walkHalfLength } = analyzeSplats(splatMesh);
-  const eyeHeight = groundY + EYE_HEIGHT;
+  const { centers, centroid, radius, groundY, walkDirection, walkHalfLength } = analyzeSplats(splatMesh);
 
   const overviewRadius = radius * 2.2;
   const overviewHeight = centroid.y + overviewRadius * 0.5;
@@ -106,21 +127,27 @@ export function cinematicWaypointsFromSplats(splatMesh: SplatMesh): Waypoint[] {
 
   const walkStart = centroid.clone().addScaledVector(walkDirection, -walkHalfLength);
   const walkEnd = centroid.clone().addScaledVector(walkDirection, walkHalfLength);
+  const walkStartEyeHeight = localGroundY(centers, walkStart.x, walkStart.z, groundY) + WALK_CLEARANCE;
 
   const descentWaypoint: Waypoint = {
-    position: new THREE.Vector3(walkStart.x, (overviewHeight + eyeHeight) / 2, walkStart.z),
+    position: new THREE.Vector3(walkStart.x, (overviewHeight + walkStartEyeHeight) / 2, walkStart.z),
     lookAt: centroid.clone(),
   };
 
-  const walkCount = 5;
-  const lookAheadDistance = walkHalfLength * 0.4;
+  const walkCount = 7;
+  const lookAheadDistance = walkHalfLength * 0.25;
   const walkWaypoints: Waypoint[] = [];
   for (let i = 0; i < walkCount; i++) {
     const t = i / (walkCount - 1);
     const position = walkStart.clone().lerp(walkEnd, t);
-    position.y = eyeHeight;
-    const lookAt = position.clone().addScaledVector(walkDirection, lookAheadDistance);
-    lookAt.y = eyeHeight;
+    position.y = localGroundY(centers, position.x, position.z, groundY) + WALK_CLEARANCE;
+
+    const lookAtGround = walkStart.clone().lerp(walkEnd, t + lookAheadDistance / (walkHalfLength * 2));
+    const lookAt = new THREE.Vector3(
+      lookAtGround.x,
+      localGroundY(centers, lookAtGround.x, lookAtGround.z, groundY) + WALK_CLEARANCE,
+      lookAtGround.z,
+    );
     walkWaypoints.push({ position, lookAt });
   }
 
